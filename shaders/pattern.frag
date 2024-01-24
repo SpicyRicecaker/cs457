@@ -42,6 +42,10 @@ layout (binding = 1) uniform ColorBlock {
 #define PI 3.1415926538
 #define mirror_x .5
 
+// vec3 mix(vec3 value0, vec3 value1, float t) {
+//     return (1.0 - t) * value0 + t * value1;
+// }
+
 void
 main( )
 {
@@ -57,14 +61,27 @@ main( )
 	// 	s = -s;
 	// 	s += mirror_x;
 	// }
+
+	// copied from canvas slides
+	float Ar = uAd / 2.;
+	float Br = uBd / 2.;
+	int numins = int( vST.s / uAd );
+	int numint = int( vST.t / uBd );
+	float sc = numins * uAd + Ar;
+	float tc = numint * uBd + Br;
 	
-	float t = vST.t;
-	float s = vST.s;
+	float local_s = vST.s;
+	float local_t = vST.t;
+	// random ellipse
+	// vec2 ellipse_c = vec2(0.5, 0.5);
+
+	float t = smoothstep(1. - uTol, 1. + uTol, pow(local_s - sc, 2.) / pow(Ar, 2.) + pow(local_t - tc, 2.) / pow(Br, 2.));
 
 	// determine the color using the square-boundary equations:
 
 	// uColor is the constant color of the object given no changes
 	vec3 myColor = colors.yellow.rgb;
+	myColor = mix(myColor, vec3(0., 0., 0.), t);
 	// (uS0, uT0) is the center of the square, whilst uD is the length of the square
 	// how do I create a circle instead?
 	// if( uS0-uD/2. <= s  &&  s <= uS0+uD/2.  &&  uT0-uD/2. <= t  &&  t <= uT0+uD/2. )
@@ -81,11 +98,6 @@ main( )
 	// 	myColor = vec3(1., 0., 0.);
 	// }
 
-	// random ellipse
-	vec2 ellipse_c = vec2(0.5, 0.5);
-	if (pow(s - ellipse_c.x, 2.) / pow(uAd, 2.) + pow(t - ellipse_c.y, 2.) / pow(uBd, 2.) <= 1.) {
-		myColor = vec3(0., 0., 0.);
-	}
 
 	// apply the per-fragmewnt lighting to myColor:
 	vec3 Normal = normalize(vN);
