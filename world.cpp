@@ -115,48 +115,35 @@ World::Init()
 
   // init keytimes
   {
-
     for (auto [t, v] : (float[][2]){
-           { 0., 0. },
-           { .7, 0. },
-           { .8, -.005 },
-           { .9, .005 },
-           { 1., 0. },
+           { 0., 0.2 },
+           { 0.2, 0.2 },
+           { 0.4, 0.2 },
+           { 0.6, 0.2 },
+           { 0.8, 0.2 },
+           { 1.0, 0.2 },
+          //  { 0., 0. },
+          //  { 0.25, .0000 },
+          //  { 0.5, .0050 },
+          //  { 0.75, .0500 },
+          //  { 1., .0000 },
          }) {
-      world.eyes_y_offset.AddTimeValue(t, v);
+      world.uAd.AddTimeValue(t, v);
     }
 
     for (auto [t, v] : (float[][2]){
-           { 0., 1. },
-           { 0.1 / 4, 0.95 },
-           { 0.2 / 4, 0.00 },
-           { 0.3 / 4, 0.95 },
-           { 0.4 / 4, 1. },
-           { 1., 1. },
+           { 0., 0.2 },
+           { 0.2, 0.2 },
+           { 0.4, 0.2 },
+           { 0.6, 0.2 },
+           { 0.8, 0.2 },
+           { 1.0, 0.2 },
+          //  { 0., 0. },
+          //  { 0.8, .302 },
+          //  { 0.9, .402 },
+          //  { 1., .503 },
          }) {
-      world.eyes_y_radius.AddTimeValue(t, v);
-    }
-
-    for (auto [t, v] : (float[][2]){
-           { 0., 1. },
-           { 0.2, 1. },
-           { 0.2 + .1 / 4, 0.95 },
-           { 0.2 + .2 / 4, 0.00 },
-           { 0.2 + .3 / 4, 0.95 },
-           { 0.2 + .4 / 4, 1. },
-           { 1., 1. },
-         }) {
-      world.eyes_y_radius_crying.AddTimeValue(t, v);
-    }
-
-    for (auto [t, v] : (float[][2]){
-           { 0., 0. },
-           { 0.25, .0000 },
-           { 0.5, .0050 },
-           { 0.75, .0500 },
-           { 1., .0000 },
-         }) {
-      world.uS.AddTimeValue(t, v);
+      world.uBd.AddTimeValue(t, v);
     }
 
     for (auto [t, v] : (float[][2]){
@@ -165,7 +152,7 @@ World::Init()
            { 0.9, .402 },
            { 1., .503 },
          }) {
-      world.uT.AddTimeValue(t, v);
+      world.uTol.AddTimeValue(t, v);
     }
   }
 
@@ -182,24 +169,6 @@ World::Init()
 
   pattern.SetUniformVariable("uTime", world.Time);
 
-  world.pika = Pika{
-    .eyes = Eyes{ .c = glm::vec2(.5, .5), .d = .108, .s = 0.0414 },
-    .highlights =
-      Highlights{ .c = glm::vec2(.5, .5187), .d = .097, .s = .0186 },
-    .highlights2 =
-      Highlights2{ .c = glm::vec2(.5, .4900), .d = .117, .s = .0086 },
-    .mouth = Mouth{ .c = glm::vec2(.5, .426), .r = glm::vec2(.059, .109) },
-    .nose =
-      Nose{
-        .c = glm::vec2(.5, .5),
-        .h = .0059,
-        .theta = -F_PI / 2.,
-      },
-    .pouches = Pouches{ .c = glm::vec2(.5, .388), .d = .165, .s = .0414 },
-    .ears =
-      Ears{ .c = glm::vec2(.5, .6), .h = .0232, .theta = -F_PI / 8., .d = .2 },
-  };
-
   world.pikacolors = PikaColors{
     // dummy alpha value to avoid padding issues in shader
     .mouthred = glm::vec4(232. / 255., 123. / 255., 124. / 255., 1.),
@@ -207,7 +176,6 @@ World::Init()
     .pouchred = glm::vec4(225. / 255., 91. / 255., 66. / 255., 1.)
   };
 
-  world.pattern.SetUniformBufferObject(world.pika);
   world.pattern.SetUniformBufferObject(world.pikacolors);
 
   pattern.UnUse();

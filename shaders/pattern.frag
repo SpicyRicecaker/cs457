@@ -14,100 +14,23 @@ uniform vec3    uSpecularColor;	 // light color
 uniform float   uShininess;	 // specular exponent
 
 uniform float 	uTime;
-uniform float 	uEyesYOffset, uEyesYRadius;
-uniform float 	uEyesYRadiusCrying;
-uniform	float 	uCrying;
-uniform float 	uS, uT;		
 // in variables from the vertex shader and interpolated in the rasterizer:
 
 in  vec3  vN;		   // normal vector
 in  vec3  vL;		   // vector from point to light
 in  vec3  vE;		   // vector from point to eye
 in  vec2  vST;		   // (s,t) texture coordinates
-
-struct Eyes {
-	// center
-	vec2 c;
-	// distance	
-	float d;
-	// size
-	float s;
-};
-
-struct Highlights {
-	// center
-	vec2 c;
-	// distance	
-	float d;
-	// size
-	float s;
-};
-
-
-struct Mouth {
-	// center
-	vec2 c;
-	// radii
-	vec2 r;
-};
-
-struct Nose {
-	// center
-	vec2 c;
-	// height	
-	float h;
-	// rotation
-	float theta;
-};
-
-struct Pouches {
-	// center
-	vec2 c;
-	// distance	
-	float d;
-	// size
-	float s;
-};
-
-struct Ears {
-	// center
-	vec2 c;
-	// height
-	float h;
-	// theta
-	float theta;
-	// distance
-	float d;
-};
-
-struct Highlights2 {
-	// center
-	vec2 c;
-	// distance	
-	float d;
-	// size
-	float s;
-};
-
-struct Pika {
-  Eyes eyes;
-  Highlights highlights;
-  Highlights2 highlights2;
-  Mouth mouth;
-  Nose nose;
-  Pouches pouches;
-  Ears ears;
-};
+// struct Game {};
 
 // MUST be alphabetical LOL
 // Think 6 is the data cap for uniform buffer objects
-layout (binding = 0) uniform Block {
-	Pika p;
-};
+// layout (binding = 0) uniform Block {
+// 	Game g;
+// };
 
 struct PikaColors {
 	vec4 mouthred;
-  vec4 yellow;
+	vec4 yellow;
 	vec4 pouchred;
 };
 
@@ -158,8 +81,9 @@ main( )
 	// 	myColor = vec3(1., 0., 0.);
 	// }
 
-	// pika's eyes
-	if ((pow((s - (p.eyes.c.x - p.eyes.d)), 2.) / pow(p.eyes.s, 2.)) + (pow((t - p.eyes.c.y), 2.) / pow(p.eyes.s * uEyesYRadius, 2.)) <= 1.) {
+	// random ellipse
+	vec2 ellipse_c = vec2(0.5, 0.5);
+	if (pow(s - ellipse_c.x, 2.) / pow(uAd, 2.) + pow(t - ellipse_c.y, 2.) / pow(uBd, 2.) <= 1.) {
 		myColor = vec3(0., 0., 0.);
 	}
 

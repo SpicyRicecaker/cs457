@@ -14,7 +14,7 @@ const int CAMERA_SCENE = 0;
 const int WORLD_SCENE = 1;
 
 // for animation:
-const int MS_PER_CYCLE = 4000; // 10000 milliseconds = 10 seconds
+const int MS_PER_CYCLE = 10000; // 10000 milliseconds = 10 seconds
 
 // which projection:
 enum Projections
@@ -50,14 +50,13 @@ struct World
   DisplayLists display_lists;
   std::vector<std::array<float, 4>> colors;
   GLSLProgram pattern;
-  Pika pika;
   PikaColors pikacolors;
-  Keytimes eyes_y_offset;
-  Keytimes eyes_y_radius;
-  Keytimes eyes_y_radius_crying;
 
-  Keytimes uS;
-  Keytimes uT;
+  // Keytimes uS;
+  // Keytimes uT;
+  Keytimes uAd;
+  Keytimes uBd;
+  Keytimes uTol;
 
   Scene& get_current_scene();
   std::array<float, 4>& get_color(Color c);

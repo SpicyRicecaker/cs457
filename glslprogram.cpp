@@ -301,8 +301,6 @@ void GLSLProgram::EnsureUniformBufferObjectInitialized()
     GLuint binding_point = 0;
     glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, uniform_buffer_object);
 
-    //
-
     // create empty object buffer
     glGenBuffers(1, &uniform_buffer_object_2);
     glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer_object_2);
