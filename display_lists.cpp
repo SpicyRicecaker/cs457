@@ -149,66 +149,6 @@ DisplayLists::New(Camera cam)
   glLineWidth(1.);
   glEndList();
 
-  std::vector<Planet> planets = {
-    Planet{ 0, 0, "venus", 0.95, 'v' },   Planet{ 0, 0, "earth", 1.00, 'e' },
-    Planet{ 0, 0, "mars", 0.53, 'm' },    Planet{ 0, 0, "jupiter", 11.21, 'j' },
-    Planet{ 0, 0, "saturn", 9.45, 's' },  Planet{ 0, 0, "uranus", 4.01, 'u' },
-    Planet{ 0, 0, "neptune", 3.88, 'n' },
-  };
-
-  for (auto& planet : planets) {
-    // read texture from fs
-    int width, height;
-    // gets current working directory on unix
-    // {
-    //   char cwd[PATH_MAX];
-    //   if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    //     std::cout << "Current working directory: " << cwd << std::endl;
-    //   } else {
-    //     perror("getcwd() error");
-    //   }
-    // }
-    // std::cout << "adding planet " << std::format("./textures/{}.bmp",
-    // planet.name)
-    //           << std::endl;
-    std::string file_name = std::format("../textures/{}.bmp", planet.name);
-    const char* file = file_name.c_str();
-
-    unsigned char* texture = BmpToTexture(file, &width, &height);
-    if (texture == NULL) {
-      fprintf(stderr, "Cannot open texture '%s'\n", file);
-    } else {
-      fprintf(
-        stderr, "Opened '%s': width = %d ; height = %d\n", file, width, height);
-    }
-    // create an id for texture
-    glGenTextures(1, &planet.texture);
-    // bind to gpu
-    glBindTexture(GL_TEXTURE_2D, planet.texture);
-    // ?
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    // behavior when s, t not in [0, 1]
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // sampling behavior, interpolated or nearest, or something else?
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(
-      GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
-
-    // create sphere w/ texture & radius, and add to surface
-
-    planet.dl = glGenLists(1);
-    // we will just have to scale later using the radius
-    glNewList(planet.dl, GL_COMPILE);
-    // MarsTex must have already been created when
-    // this is called glPushMatrix();
-    glBindTexture(GL_TEXTURE_2D, planet.texture);
-    // a dl can call another dl that has been previously created
-    glCallList(SphereList);
-    glEndList();
-  }
-
   return DisplayLists{ .AxesList = AxesList,
                        .CarouselCircleList = CarouselCircleList,
                        .BackgroundCircleList = BackgroundCircleList,
@@ -223,8 +163,7 @@ DisplayLists::New(Camera cam)
                        // .Avocado = Avocado,
                        // GridDL,
                        .CylinderList = CylinderList,
-                       .TorusList = TorusList,
-                       .planets = planets };
+                       .TorusList = TorusList };
 }
 
 void
