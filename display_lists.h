@@ -80,8 +80,8 @@ struct Planet
   GLuint dl;
   GLuint texture;
   std::string name;
-  float radius;
   char key;
+  float radius;
 };
 
 struct DisplayLists

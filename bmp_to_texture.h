@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <iostream>
 
 #define VERBOSE false
 
@@ -49,3 +50,6 @@ ReadShort(FILE* fp);
 
 unsigned char*
 BmpToTexture(const char* filename, int* width, int* height);
+
+unsigned char*
+ReadTexture3D(const char *filename, int *width, int *height, int *depth);

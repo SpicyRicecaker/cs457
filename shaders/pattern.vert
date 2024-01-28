@@ -7,6 +7,7 @@ out  vec3  vN;	  // normal vector
 out  vec3  vL;	  // vector from point to light
 out  vec3  vE;	  // vector from point to eye
 out  vec2  vST;	  // (s,t) texture coordinates
+out  vec3  vMCposition;
 
 // where the light is:
 
@@ -24,6 +25,8 @@ main( )
   // vector from light to point
 	vL = LightPosition - ECposition.xyz;	    // vector from the point to the light position
 	vE = vec3( 0., 0., 0. ) - ECposition.xyz;       // vector from the point to the eye position
+	// add coordinates for later
+	vMCposition = gl_Vertex.xyz;
   // map vertex position from world space to 2d screen space (monitor resolution) basically
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 }

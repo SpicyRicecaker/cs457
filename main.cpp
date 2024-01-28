@@ -512,8 +512,13 @@ Keyboard(unsigned char c, int x, int y)
       break;
     }
 
-    default: {
+    case 'n':
+    case 'N': {
+      world.useXYZ = !world.useXYZ;
+      break;
+    }
 
+    default: {
       int planet_i = 0;
       for (auto& p : world.display_lists.planets) {
         if (p.key == c) {

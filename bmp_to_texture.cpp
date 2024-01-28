@@ -246,3 +246,24 @@ BmpToTexture(const char* filename, int* width, int* height)
   *height = numt;
   return texture;
 }
+
+unsigned char*
+ReadTexture3D(const char *filename, int *width, int *height, int *depth)
+{
+  FILE *fp = fopen(filename, "rb");
+  if (fp == NULL) {
+    return NULL;
+  }
+  int nums, numt, nump;
+  fread(&nums, 4, 1, fp);
+  fread(&numt, 4, 1, fp);
+  fread(&nump, 4, 1, fp);
+  fprintf( stderr, "Texture size = %d x %d x %d\n", nums, numt, nump );
+  *width = nums;
+  *height = numt;
+  *depth = nump;
+  unsigned char * texture = new unsigned char[ 4 * nums * numt * nump ];
+  fread(texture, 4 * nums * numt * nump, 1, fp);
+  fclose(fp);
+  return texture;
+}

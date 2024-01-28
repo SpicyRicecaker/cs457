@@ -57,6 +57,10 @@ struct World
   Keytimes uAd;
   Keytimes uBd;
   Keytimes uTol;
+  Keytimes uNoiseAmp;
+  Keytimes uNoiseFreq;
+  Keytimes uUseXYZforNoise;
+  bool useXYZ;
 
   Scene& get_current_scene();
   std::array<float, 4>& get_color(Color c);

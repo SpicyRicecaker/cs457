@@ -150,15 +150,12 @@ DisplayLists::New(Camera cam)
   glEndList();
 
   std::vector<Planet> planets = {
-    Planet{ 0, 0, "venus", 0.95, 'v' },   Planet{ 0, 0, "earth", 1.00, 'e' },
-    Planet{ 0, 0, "mars", 0.53, 'm' },    Planet{ 0, 0, "jupiter", 11.21, 'j' },
-    Planet{ 0, 0, "saturn", 9.45, 's' },  Planet{ 0, 0, "uranus", 4.01, 'u' },
-    Planet{ 0, 0, "neptune", 3.88, 'n' },
+    Planet{ 0, 0, "noise3d.064.tex", 'e', 1.0},
+    Planet{ 0, 0, "noise3d.064.tex", 'm', 0.5},
   };
 
   for (auto& planet : planets) {
-    // read texture from fs
-    int width, height;
+    int nums, numt, nump;
     // gets current working directory on unix
     // {
     //   char cwd[PATH_MAX];
@@ -171,30 +168,30 @@ DisplayLists::New(Camera cam)
     // std::cout << "adding planet " << std::format("./textures/{}.bmp",
     // planet.name)
     //           << std::endl;
-    std::string file_name = std::format("../textures/{}.bmp", planet.name);
+    std::string file_name = std::format("../textures/{}", planet.name);
     const char* file = file_name.c_str();
 
-    unsigned char* texture = BmpToTexture(file, &width, &height);
+    unsigned char* texture = ReadTexture3D(file, &nums, &numt, &nump);
     if (texture == NULL) {
       fprintf(stderr, "Cannot open texture '%s'\n", file);
     } else {
-      fprintf(
-        stderr, "Opened '%s': width = %d ; height = %d\n", file, width, height);
+      fprintf(stderr, "Opened '%s'", file);
     }
     // create an id for texture
     glGenTextures(1, &planet.texture);
     // bind to gpu
-    glBindTexture(GL_TEXTURE_2D, planet.texture);
+    glBindTexture(GL_TEXTURE_3D, planet.texture);
     // ?
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     // behavior when s, t not in [0, 1]
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
     // sampling behavior, interpolated or nearest, or something else?
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(
-      GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage3D(
+      GL_TEXTURE_3D, 0, GL_RGBA, nums, numt, nump, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture);
 
     // create sphere w/ texture & radius, and add to surface
 
@@ -203,7 +200,8 @@ DisplayLists::New(Camera cam)
     glNewList(planet.dl, GL_COMPILE);
     // MarsTex must have already been created when
     // this is called glPushMatrix();
-    glBindTexture(GL_TEXTURE_2D, planet.texture);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_3D, planet.texture);
     // a dl can call another dl that has been previously created
     glCallList(SphereList);
     glEndList();
@@ -504,7 +502,6 @@ Display()
     Planet& p =
       world.display_lists.planets[world.get_current_scene().current_planet];
 
-
     glm::mat4 model = glm::mat4(1.);
 
     model = glm::scale(model, p.radius * glm::vec3(1., 1., 1.));
@@ -513,15 +510,28 @@ Display()
 
     world.pattern.Use();
 
+    // use the sampler defined in texture unit 3
+    // since we're dumping all our noise textures in there for now
+    world.pattern.SetUniformVariable("Noise3", 3);
+
     // printf("hello world\n");
     if (world.get_current_scene().update_keytimes) {
       // printf("hello world\n");
       world.pattern.SetUniformVariable("uAd", world.uAd.GetValue(world.Time));
       world.pattern.SetUniformVariable("uBd", world.uBd.GetValue(world.Time));
       world.pattern.SetUniformVariable("uTol", world.uTol.GetValue(world.Time));
+
+      world.pattern.SetUniformVariable("uNoiseAmp", world.uNoiseAmp.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uNoiseFreq", world.uNoiseFreq.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uUseXYZforNoise", world.uUseXYZforNoise.GetValue(world.Time));
     }
-    if(world.get_current_scene().update_time) {
+    if (world.get_current_scene().update_time) {
       world.pattern.SetUniformVariable("uTime", world.Time);
+    }
+    if (world.useXYZ) {
+      world.pattern.SetUniformVariable("uUseXYZforNoise", true);
+    } else {
+      world.pattern.SetUniformVariable("uUseXYZforNoise", false);
     }
 
     glCallList(p.dl);

@@ -8,6 +8,10 @@ uniform float   uKa, uKd, uKs;	 // coefficients of each type of lighting -- make
 // uBd	Ellipse diameter for t
 // uTol	Width of the blend between ellipse and non-ellipse areas 
 uniform float 	uAd, uBd, uTol;
+uniform float  	uNoiseAmp, uNoiseFreq;
+uniform bool 	uUseXYZforNoise;
+uniform sampler3D Noise3;
+in vec3 vMCposition;
 
 uniform vec3    uColor;		 // object color
 uniform vec3    uSpecularColor;	 // light color
@@ -53,7 +57,7 @@ main( )
 	// float s = vST.s / .5 - mirror_x;
 
 	// bool right = false;
-
+	
 	// if (s > mirror_x) {
 	// 	right = true;
 	// 	// move to middle
@@ -62,6 +66,28 @@ main( )
 	// 	s += mirror_x;
 	// }
 
+	vec4 nv;
+	
+	if (uUseXYZforNoise) {
+        nv = texture(Noise3, uNoiseFreq * vMCposition );
+	} else {
+        nv = texture(Noise3, uNoiseFreq * vec3(vST, 0.) );
+	}
+
+	float n = nv.r + nv.g + nv.b + nv.a; // range is 1. -> 3.
+	n = n - 2.; // range is now -1. -> 1.
+	n *= uNoiseAmp;
+
+	// vec3 myColor = colors.yellow.rgb;
+	// if (n > -0.1) {
+	// 	myColor = vec3(1., 1., 1.);
+	// } else {
+	// 	myColor = vec3(0., 0., 0.);
+	// }
+
+	// vST.s + n;
+	// vST.t + n;
+
 	// copied from canvas slides
 	float Ar = uAd / 2.;
 	float Br = uBd / 2.;
@@ -69,19 +95,39 @@ main( )
 	int numint = int( vST.t / uBd );
 	float sc = numins * uAd + Ar;
 	float tc = numint * uBd + Br;
+
+	// copied from https://web.engr.oregonstate.edu/~mjb/cs557/Handouts/noise.1pp.pdf
+	float ds = vST.s - sc; // wrt ellipse center
+	float dt = vST.t - tc; // wrt ellipse center
+
+	float oldDist = sqrt( ds * ds + dt * dt );
+	float newDist = oldDist + n;
+	float scale = newDist / oldDist; // this could be < 1., = 1., or > 1.
+
+	ds *= scale; // scale by noise factor
+	ds /= Ar; // ellipse equation
+	dt *= scale; // scale by noise factor
+	dt /= Br; // ellipse equation
+
+	// use the smoothstep 
+	float d = ds * ds + dt * dt;
+	float t = smoothstep( 1.-uTol, 1.+uTol, d );
+
+	vec3 myColor = mix( colors.yellow.rgb, vec3(0., 0., 0.), t );
 	
-	float local_s = vST.s;
-	float local_t = vST.t;
-	// random ellipse
-	// vec2 ellipse_c = vec2(0.5, 0.5);
+	// float local_s = vST.s;
+	// float local_t = vST.t;
+	// // random ellipse
+	// // vec2 ellipse_c = vec2(0.5, 0.5);
 
-	float t = smoothstep(1. - uTol, 1. + uTol, pow(local_s - sc, 2.) / pow(Ar, 2.) + pow(local_t - tc, 2.) / pow(Br, 2.));
+	// float t = smoothstep(1. - uTol, 1. + uTol, pow(local_s - sc, 2.) / pow(Ar, 2.) + pow(local_t - tc, 2.) / pow(Br, 2.));
 
-	// determine the color using the square-boundary equations:
+	// // determine the color using the square-boundary equations:
 
-	// uColor is the constant color of the object given no changes
-	vec3 myColor = colors.yellow.rgb;
-	myColor = mix(myColor, vec3(0., 0., 0.), t);
+	// // uColor is the constant color of the object given no changes
+	// vec3 myColor = colors.yellow.rgb;
+	// myColor = mix(myColor, vec3(0., 0., 0.), t);
+	// vec3 myColor = vec3(n, n, n);
 	// (uS0, uT0) is the center of the square, whilst uD is the length of the square
 	// how do I create a circle instead?
 	// if( uS0-uD/2. <= s  &&  s <= uS0+uD/2.  &&  uT0-uD/2. <= t  &&  t <= uT0+uD/2. )
