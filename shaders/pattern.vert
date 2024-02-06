@@ -14,19 +14,19 @@ out  vec3  vMCposition;
 const vec3 LightPosition = vec3(  0., 5., 5. );
 
 void
-main( )
+main()
 {
-  // interpolated s & t coordinates?
+	// interpolated s & t coordinates?
 	vST = gl_MultiTexCoord0.st;
-  // why do we need this
+  	// why do we need this
 	vec4 ECposition = gl_ModelViewMatrix * gl_Vertex;
-  // vector normal to current vertex?
+	// vector normal to current vertex?
 	vN = normalize( gl_NormalMatrix * gl_Normal );  // normal vector
-  // vector from light to point
+	// vector from light to point
 	vL = LightPosition - ECposition.xyz;	    // vector from the point to the light position
 	vE = vec3( 0., 0., 0. ) - ECposition.xyz;       // vector from the point to the eye position
 	// add coordinates for later
 	vMCposition = gl_Vertex.xyz;
-  // map vertex position from world space to 2d screen space (monitor resolution) basically
+	// map vertex position from world space to 2d screen space (monitor resolution) basically
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 }

@@ -68,11 +68,11 @@ main( )
 
 	vec4 nv;
 	
-	if (uUseXYZforNoise) {
-        nv = texture(Noise3, uNoiseFreq * vMCposition );
-	} else {
+	// if (uUseXYZforNoise) {
+    //     nv = texture(Noise3, uNoiseFreq * vMCposition );
+	// } else {
         nv = texture(Noise3, uNoiseFreq * vec3(vST, 0.) );
-	}
+	// }
 
 	float n = nv.r + nv.g + nv.b + nv.a; // range is 1. -> 3.
 	n = n - 2.; // range is now -1. -> 1.

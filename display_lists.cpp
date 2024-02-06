@@ -139,7 +139,7 @@ DisplayLists::New(Camera cam)
   OsuSphere(1., 300, 300);
   glEndList();
 
-  GLuint PlaneList = make_grid(1., 1000., 0.);
+  GLuint PlaneList = make_grid(1., 128, 0.);
 
   // create the axes:
   GLuint AxesList = glGenLists(1);
@@ -556,6 +556,27 @@ Display()
 
   // render the plane
   {
+    if (world.get_current_scene().update_time) {
+      world.pattern.SetUniformVariable("uTime", world.Time);
+    }
+    if (world.get_current_scene().update_keytimes) {
+      // printf("hello world\n");
+      world.pattern.SetUniformVariable("uAd",
+      world.uAd.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uBd",
+      world.uBd.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uTol",
+      world.uTol.GetValue(world.Time));
+
+      world.pattern.SetUniformVariable("uNoiseAmp",
+      world.uNoiseAmp.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uNoiseFreq",
+      world.uNoiseFreq.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uUseXYZforNoise",
+      world.uUseXYZforNoise.GetValue(world.Time));
+    }
+
+    world.pattern.SetUniformVariable("Noise3", 3);
     world.pattern.Use();
     glCallList(world.display_lists.PlaneList);
     world.pattern.UnUse();
