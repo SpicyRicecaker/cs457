@@ -168,7 +168,7 @@ DisplayLists::New(Camera cam)
     // std::cout << "adding planet " << std::format("./textures/{}.bmp",
     // planet.name)
     //           << std::endl;
-    std::string file_name = std::format("../textures/{}", planet.name);
+    std::string file_name = std::format("{}/textures/{}", DIR_PREFIX, planet.name);
     const char* file = file_name.c_str();
 
     unsigned char* texture = ReadTexture3D(file, &nums, &numt, &nump);

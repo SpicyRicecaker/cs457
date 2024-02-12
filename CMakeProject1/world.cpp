@@ -110,8 +110,9 @@ World::Init()
   // all other setups go here, such as GLSLProgram and KeyTime setups:
 
   pattern.Init();
-  bool valid =
-    pattern.Create("../shaders/pattern.vert", "../shaders/pattern.frag");
+  std::string vert = std::format("{}/shaders/pattern.vert", DIR_PREFIX);
+  std::string frag = std::format("{}/shaders/pattern.frag", DIR_PREFIX);
+  bool valid = pattern.Create((char*) vert.c_str(), (char*) frag.c_str());
   if (!valid)
     fprintf(stderr, "Could not create the Pattern shader!\n");
   else
@@ -122,14 +123,14 @@ World::Init()
 
   pattern.Use();
   // step 5 of project 6
-  pattern.SetUniformVariable("uKa", 0.1f);
-  pattern.SetUniformVariable("uKd", 0.5f);
-  pattern.SetUniformVariable("uKs", 0.4f);
-  pattern.SetUniformVariable("uColor", 1.f, 0.5f, 0.f);
-  pattern.SetUniformVariable("uSpecularColor", 1.f, 1.f, 1.f);
-  pattern.SetUniformVariable("uShininess", 12.f);
+  pattern.SetUniformVariable((char*)"uKa", 0.1f);
+  pattern.SetUniformVariable((char*)"uKd", 0.5f);
+  pattern.SetUniformVariable((char*)"uKs", 0.4f);
+  pattern.SetUniformVariable((char*)"uColor", 1.f, 0.5f, 0.f);
+  pattern.SetUniformVariable((char*)"uSpecularColor", 1.f, 1.f, 1.f);
+  pattern.SetUniformVariable((char*)"uShininess", 12.f);
 
-  pattern.SetUniformVariable("uTime", world.Time);
+  pattern.SetUniformVariable((char*)"uTime", world.Time);
 
   world.pikacolors = PikaColors{
     // dummy alpha value to avoid padding issues in shader
@@ -151,7 +152,7 @@ void
 init_freq_keytimes()
 {
   // init keytimes
-  for (auto [t, v] : (float[][2]){
+  for (auto& [t, v] : std::vector<std::array<float, 2>> {
          { 0.0, 0.1 },
          { 0.2, 0.1 },
          { 0.4, 0.1 },
@@ -167,7 +168,7 @@ init_freq_keytimes()
     world.uAd.AddTimeValue(t, v);
   }
 
-  for (auto [t, v] : (float[][2]){
+  for (auto& [t, v] : std::vector<std::array<float, 2>>{
          { 0.0, 0.1 },
          { 0.2, 0.1 },
          { 0.4, 0.1 },
@@ -182,7 +183,7 @@ init_freq_keytimes()
     world.uBd.AddTimeValue(t, v);
   }
 
-  for (auto [t, v] : (float[][2]){
+  for (auto& [t, v] : std::vector<std::array<float, 2>>{
          { 0.0, 0.19 },
          { 0.2, 0.19 },
          { 0.4, 0.19 },
@@ -193,7 +194,7 @@ init_freq_keytimes()
     world.uTol.AddTimeValue(t, v);
   }
 
-  for (auto [t, v] : (float[][2]){
+  for (auto& [t, v] : std::vector<std::array<float, 2>>{
          { 0.0, 0.00 },
          { 0.2, 1.00 },
          { 0.4, 7.00 },
@@ -204,7 +205,7 @@ init_freq_keytimes()
     world.uNoiseAmp.AddTimeValue(t, v);
   }
 
-  for (auto [t, v] : (float[][2]){
+  for (auto& [t, v] : std::vector<std::array<float,2>>{
          { 0.0, 1.00 },
          { 0.2, 2.00 },
          { 0.4, 3.00 },
@@ -220,7 +221,7 @@ void
 init_puddle_keytimes()
 {
   float uA_final = .4;
-  for (auto [t, v] : (float[][2]){
+  for (auto& [t, v] : std::vector<std::array<float,2>>{
          { 0.0, 1.0 },
          { 0.2, 2.0 },
          { 0.4, 3.0 },
@@ -230,18 +231,18 @@ init_puddle_keytimes()
        }) {
     world.uA.AddTimeValue(t, v);
   }
-  float uB_final = (2. * M_PI);
-  for (auto [t, v] : (float[][2]){
-         { 0.0, uB_final },
-         { 0.2, uB_final + .5 * M_PI },
-         { 0.4, uB_final + 1. * M_PI },
-         { 0.6, uB_final + .5 * M_PI},
-         { 0.8, uB_final },
-         { 1.0, uB_final },
+  float uB_final = (2.f * M_PI);
+  for (auto& [t, v] : std::vector<std::array<float,2>>{
+         { 0.0f, uB_final },
+         { 0.2f, uB_final + .5f * (float)M_PI },
+         { 0.4f, uB_final + 1.f * (float)M_PI },
+         { 0.6f, uB_final + .5f * (float)M_PI},
+         { 0.8f, uB_final },
+         { 1.0f, uB_final },
        }) {
     world.uB.AddTimeValue(t, v);
   }
-  for (auto [t, v] : (float[][2]){
+  for (auto& [t, v] : std::vector<std::array<float,2>>{
          { 0.0, 0.00 },
          { 0.2, 1.00 },
          { 0.4, 2.00 },
@@ -252,7 +253,7 @@ init_puddle_keytimes()
     world.uC.AddTimeValue(t, v);
   }
   float uD_final = 4.;
-  for (auto [t, v] : (float[][2]){
+  for (auto& [t, v] : std::vector<std::array<float,2>>{
          { 0.0, uD_final },
          { 0.2, uD_final },
          { 0.4, uD_final },

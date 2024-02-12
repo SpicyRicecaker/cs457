@@ -15,6 +15,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+// only on windows
+#define DIR_PREFIX "../../../../CMakeProject1"
+
 void PrintMat4(glm::mat4 mat);
 
 void PrintVec3(glm::vec3 vec);
