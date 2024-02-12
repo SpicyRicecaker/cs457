@@ -27,6 +27,10 @@ const float STAR_HEIGHT = 60.;
 const float STAR_END_HEIGHT = 0.2;
 const float STAR_HORIZONTAL_Z_DIST = -10.;
 
+void init_keytimes();
+void init_freq_keytimes();
+void init_puddle_keytimes();
+
 struct World
 {
   int MainWindow; // window id for main graphics window
@@ -61,6 +65,12 @@ struct World
   Keytimes uNoiseFreq;
   Keytimes uUseXYZforNoise;
   bool useXYZ;
+
+  Keytimes uA;
+  Keytimes uB;
+  Keytimes uC;
+  Keytimes uD;
+  bool useBumpMapping;
 
   Scene& get_current_scene();
   std::array<float, 4>& get_color(Color c);

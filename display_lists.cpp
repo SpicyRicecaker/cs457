@@ -139,7 +139,7 @@ DisplayLists::New(Camera cam)
   OsuSphere(1., 300, 300);
   glEndList();
 
-  GLuint PlaneList = make_grid(1., 128, 0.);
+  GLuint PlaneList = make_grid(1., 1000, 0.);
 
   // create the axes:
   GLuint AxesList = glGenLists(1);
@@ -505,54 +505,6 @@ Display()
       glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     }
   }
-  // draw pikachu
-  // {
-  //   Planet& p =
-  //     world.display_lists.planets[world.get_current_scene().current_planet];
-
-  //   glm::mat4 model = glm::mat4(1.);
-
-  //   model = glm::scale(model, p.radius * glm::vec3(1., 1., 1.));
-  //   // model = glm::scale(model, glm::vec3(1., 1., 1.));
-  //   glLoadMatrixf(&(scene.view_matrix * model)[0][0]);
-
-  //   world.pattern.Use();
-
-  //   // use the sampler defined in texture unit 3
-  //   // since we're dumping all our noise textures in there for now
-  //   world.pattern.SetUniformVariable("Noise3", 3);
-
-  //   // printf("hello world\n");
-  //   if (world.get_current_scene().update_keytimes) {
-  //     // printf("hello world\n");
-  //     world.pattern.SetUniformVariable("uAd",
-  //     world.uAd.GetValue(world.Time));
-  //     world.pattern.SetUniformVariable("uBd",
-  //     world.uBd.GetValue(world.Time));
-  //     world.pattern.SetUniformVariable("uTol",
-  //     world.uTol.GetValue(world.Time));
-
-  //     world.pattern.SetUniformVariable("uNoiseAmp",
-  //     world.uNoiseAmp.GetValue(world.Time));
-  //     world.pattern.SetUniformVariable("uNoiseFreq",
-  //     world.uNoiseFreq.GetValue(world.Time));
-  //     world.pattern.SetUniformVariable("uUseXYZforNoise",
-  //     world.uUseXYZforNoise.GetValue(world.Time));
-  //   }
-  //   if (world.get_current_scene().update_time) {
-  //     world.pattern.SetUniformVariable("uTime", world.Time);
-  //   }
-  //   if (world.useXYZ) {
-  //     world.pattern.SetUniformVariable("uUseXYZforNoise", true);
-  //   } else {
-  //     world.pattern.SetUniformVariable("uUseXYZforNoise", false);
-  //   }
-
-  //   // glCallList(p.dl);
-  //   world.pattern.UnUse();
-
-  //   glLoadMatrixf(&(scene.view_matrix)[0][0]);
-  // }
 
   // render the plane
   {
@@ -561,19 +513,23 @@ Display()
     }
     if (world.get_current_scene().update_keytimes) {
       // printf("hello world\n");
-      world.pattern.SetUniformVariable("uAd",
-      world.uAd.GetValue(world.Time));
-      world.pattern.SetUniformVariable("uBd",
-      world.uBd.GetValue(world.Time));
-      world.pattern.SetUniformVariable("uTol",
-      world.uTol.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uAd", world.uAd.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uBd", world.uBd.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uTol", world.uTol.GetValue(world.Time));
 
       world.pattern.SetUniformVariable("uNoiseAmp",
-      world.uNoiseAmp.GetValue(world.Time));
+                                       world.uNoiseAmp.GetValue(world.Time));
       world.pattern.SetUniformVariable("uNoiseFreq",
-      world.uNoiseFreq.GetValue(world.Time));
-      world.pattern.SetUniformVariable("uUseXYZforNoise",
-      world.uUseXYZforNoise.GetValue(world.Time));
+                                       world.uNoiseFreq.GetValue(world.Time));
+      world.pattern.SetUniformVariable(
+        "uUseXYZforNoise", world.uUseXYZforNoise.GetValue(world.Time));
+
+      // set values for puddle
+      world.pattern.SetUniformVariable("uA", world.uA.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uB", world.uB.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uC", world.uC.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uD", world.uD.GetValue(world.Time));
+      world.pattern.SetUniformVariable("uUseBumpMapping", world.useBumpMapping);
     }
 
     world.pattern.SetUniformVariable("Noise3", 3);
@@ -581,12 +537,6 @@ Display()
     glCallList(world.display_lists.PlaneList);
     world.pattern.UnUse();
   }
-  // draw test plane
-  // {
-  //   glColor3f(0.2, 0.2, 0.2);
-  //   Obsidian.SetMaterial();
-  //   glCallList(world.display_lists.PlaneList);
-  // }
 
   // disable everything in preparation for the next round of rendering
   glDisable(GL_LIGHTING);

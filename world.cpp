@@ -7,38 +7,40 @@ World::get_current_scene()
 }
 
 // as defined in world.h
-World world = World{ .MainWindow = NULL,
-                     .current_scene_idx = NULL,
-                     .scenes = {},
-                     .world_time = 0,
-                     .last_time_stamp = 0,
-                     .Time = 0.,
-                     .Ticks = 0,
-                     .SceneNeedsUpdate = false,
-                     .Xmouse = NULL,
-                     .Ymouse = NULL,
-                     .ScreenWidth = NULL,
-                     .ScreenHeight = NULL,
-                     .Frozen = false,
-                     .ActiveButton = NULL,
-                     .DebugOn = false,
-                     .ShiftHeld = false,
-                     .AltHeld = false,
-                     .lights = { Light{
-                       .light_type = LightType::Pointlight,
-                       .color = Color::White,
-                       .position = { 0., 13., 0., 1. },
-                       .ilight = GL_LIGHT0,
-                       .direction = { { 0., -1., 0. } },
-                       .quad_attenuation = 0.,
-                     } },
-                     .colors = { { 1., 1., 1., 1. },
-                                 { 1., 0., 0., 1. },
-                                 { 0., 1., 0., 1. },
-                                 { 1., 1., 0., 1. },
-                                 { 0., 0., 1., 1. } },
-                     .useXYZ = false,
-                     };
+World world = World{
+  .MainWindow = NULL,
+  .current_scene_idx = NULL,
+  .scenes = {},
+  .world_time = 0,
+  .last_time_stamp = 0,
+  .Time = 0.,
+  .Ticks = 0,
+  .SceneNeedsUpdate = false,
+  .Xmouse = NULL,
+  .Ymouse = NULL,
+  .ScreenWidth = NULL,
+  .ScreenHeight = NULL,
+  .Frozen = false,
+  .ActiveButton = NULL,
+  .DebugOn = false,
+  .ShiftHeld = false,
+  .AltHeld = false,
+  .lights = { Light{
+    .light_type = LightType::Pointlight,
+    .color = Color::White,
+    .position = { 0., 13., 0., 1. },
+    .ilight = GL_LIGHT0,
+    .direction = { { 0., -1., 0. } },
+    .quad_attenuation = 0.,
+  } },
+  .colors = { { 1., 1., 1., 1. },
+              { 1., 0., 0., 1. },
+              { 0., 1., 0., 1. },
+              { 1., 1., 0., 1. },
+              { 0., 0., 1., 1. } },
+  .useXYZ = false,
+  .useBumpMapping = true
+};
 
 void
 World::Init()
@@ -115,74 +117,8 @@ World::Init()
   else
     fprintf(stderr, "Pattern shader created!\n");
 
-  // init keytimes
-  {
-    for (auto [t, v] : (float[][2]){
-           { 0.0, 0.1 },
-           { 0.2, 0.1 },
-           { 0.4, 0.1 },
-           { 0.6, 0.1 },
-           { 0.8, 0.1 },
-           { 1.0, 0.1 },
-          //  { 0., 0. },
-          //  { 0.25, .0000 },
-          //  { 0.5, .0050 },
-          //  { 0.75, .0500 },
-          //  { 1., .0000 },
-         }) {
-      world.uAd.AddTimeValue(t, v);
-    }
-
-    for (auto [t, v] : (float[][2]){
-           { 0.0, 0.1 },
-           { 0.2, 0.1 },
-           { 0.4, 0.1 },
-           { 0.6, 0.1 },
-           { 0.8, 0.1 },
-           { 1.0, 0.1 },
-          //  { 0., 0. },
-          //  { 0.8, .302 },
-          //  { 0.9, .402 },
-          //  { 1., .503 },
-         }) {
-      world.uBd.AddTimeValue(t, v);
-    }
-
-    for (auto [t, v] : (float[][2]){
-           { 0.0, 0.19 },
-           { 0.2, 0.19 },
-           { 0.4, 0.19 },
-           { 0.6, 0.19 },
-           { 0.8, 0.19 },
-           { 1.0, 0.19 },
-         }) {
-      world.uTol.AddTimeValue(t, v);
-    }
-
-    for (auto [t, v] : (float[][2]){
-           { 0.0, 1.00 },
-           { 0.2, 2.00 },
-           { 0.4, 3.00 },
-           { 0.6, 2.00 },
-           { 0.8, 1.00 },
-           { 1.0, 1.00 },
-         }) {
-      world.uNoiseAmp.AddTimeValue(t, v);
-    }
-
-    for (auto [t, v] : (float[][2]){
-           { 0.0, 1.00 },
-           { 0.2, 2.00 },
-           { 0.4, 3.00 },
-           { 0.6, 2.00 },
-           { 0.8, 1.00 },
-           { 1.0, 1.00 },
-         }) {
-      world.uNoiseFreq.AddTimeValue(t, v);
-    }
-  }
-
   // set the uniform variables that will not change:
+  init_keytimes();
 
   pattern.Use();
   // step 5 of project 6
@@ -209,6 +145,130 @@ World::Init()
   DisplayLists display_lists =
     DisplayLists::New(world.get_current_scene().camera);
   world.display_lists = display_lists;
+}
+
+void
+init_freq_keytimes()
+{
+  // init keytimes
+  for (auto [t, v] : (float[][2]){
+         { 0.0, 0.1 },
+         { 0.2, 0.1 },
+         { 0.4, 0.1 },
+         { 0.6, 0.1 },
+         { 0.8, 0.1 },
+         { 1.0, 0.1 },
+         //  { 0., 0. },
+         //  { 0.25, .0000 },
+         //  { 0.5, .0050 },
+         //  { 0.75, .0500 },
+         //  { 1., .0000 },
+       }) {
+    world.uAd.AddTimeValue(t, v);
+  }
+
+  for (auto [t, v] : (float[][2]){
+         { 0.0, 0.1 },
+         { 0.2, 0.1 },
+         { 0.4, 0.1 },
+         { 0.6, 0.1 },
+         { 0.8, 0.1 },
+         { 1.0, 0.1 },
+         //  { 0., 0. },
+         //  { 0.8, .302 },
+         //  { 0.9, .402 },
+         //  { 1., .503 },
+       }) {
+    world.uBd.AddTimeValue(t, v);
+  }
+
+  for (auto [t, v] : (float[][2]){
+         { 0.0, 0.19 },
+         { 0.2, 0.19 },
+         { 0.4, 0.19 },
+         { 0.6, 0.19 },
+         { 0.8, 0.19 },
+         { 1.0, 0.19 },
+       }) {
+    world.uTol.AddTimeValue(t, v);
+  }
+
+  for (auto [t, v] : (float[][2]){
+         { 0.0, 0.00 },
+         { 0.2, 1.00 },
+         { 0.4, 7.00 },
+         { 0.6, 1.00 },
+         { 0.8, 0.00 },
+         { 1.0, 0.00 },
+       }) {
+    world.uNoiseAmp.AddTimeValue(t, v);
+  }
+
+  for (auto [t, v] : (float[][2]){
+         { 0.0, 1.00 },
+         { 0.2, 2.00 },
+         { 0.4, 3.00 },
+         { 0.6, 2.00 },
+         { 0.8, 1.00 },
+         { 1.0, 1.00 },
+       }) {
+    world.uNoiseFreq.AddTimeValue(t, v);
+  }
+}
+
+void
+init_puddle_keytimes()
+{
+  float uA_final = .4;
+  for (auto [t, v] : (float[][2]){
+         { 0.0, 1.0 },
+         { 0.2, 2.0 },
+         { 0.4, 3.0 },
+         { 0.6, 2.0 },
+         { 0.8, 1.0 },
+         { 1.0, 1.0 },
+       }) {
+    world.uA.AddTimeValue(t, v);
+  }
+  float uB_final = (2. * M_PI);
+  for (auto [t, v] : (float[][2]){
+         { 0.0, uB_final },
+         { 0.2, uB_final + .5 * M_PI },
+         { 0.4, uB_final + 1. * M_PI },
+         { 0.6, uB_final + .5 * M_PI},
+         { 0.8, uB_final },
+         { 1.0, uB_final },
+       }) {
+    world.uB.AddTimeValue(t, v);
+  }
+  for (auto [t, v] : (float[][2]){
+         { 0.0, 0.00 },
+         { 0.2, 1.00 },
+         { 0.4, 2.00 },
+         { 0.6, 1.00 },
+         { 0.8, 0.00 },
+         { 1.0, 0.00 },
+       }) {
+    world.uC.AddTimeValue(t, v);
+  }
+  float uD_final = 4.;
+  for (auto [t, v] : (float[][2]){
+         { 0.0, uD_final },
+         { 0.2, uD_final },
+         { 0.4, uD_final },
+         { 0.6, uD_final },
+         { 0.8, uD_final },
+         { 1.0, uD_final },
+       }) {
+    world.uD.AddTimeValue(t, v);
+  }
+}
+
+void
+init_keytimes()
+{
+  init_freq_keytimes();
+  init_puddle_keytimes();
 }
 
 std::array<float, 4>&

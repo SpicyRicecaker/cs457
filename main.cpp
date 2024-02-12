@@ -448,40 +448,9 @@ Keyboard(unsigned char c, int x, int y)
       }
       break;
     }
-    // set light colors
-    // case 'w':
-    // case 'W': {
-    // 	for (auto& l : world.lights) {
-    // 		l.color = Color::White;
-    // 	}
-    // 	break;
-    // }
-    case 'r':
-    case 'R': {
-      for (auto& l : world.lights) {
-        l.color = Color::Red;
-      }
-      break;
-    }
-    case 'g':
-    case 'G': {
-      for (auto& l : world.lights) {
-        l.color = Color::Green;
-      }
-      break;
-    }
-    case 'y':
-    case 'Y': {
-      for (auto& l : world.lights) {
-        l.color = Color::Yellow;
-      }
-      break;
-    }
     case 'b':
     case 'B': {
-      for (auto& l : world.lights) {
-        l.color = Color::Blue;
-      }
+      world.useBumpMapping = !world.useBumpMapping;
       break;
     }
     case 'w':
@@ -490,12 +459,6 @@ Keyboard(unsigned char c, int x, int y)
       world.SceneNeedsUpdate = true;
       break;
     }
-    // case 'c':
-    // case 'C': {
-    //   world.current_scene_idx = CAMERA_SCENE;
-    //   world.SceneNeedsUpdate = true;
-    //   break;
-    // }
     case 'c':
     case 'C': {
       world.get_current_scene().crying = !world.get_current_scene().crying;
