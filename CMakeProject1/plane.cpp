@@ -8,7 +8,7 @@ make_grid(float len, int steps, float z_0)
   glNewList(GridDL, GL_COMPILE);
   {
     int nums, numt, nump;
-    std::string file_name = std::format("../textures/noise3d.064.tex");
+    std::string file_name = std::format("{}/textures/noise3d.064.tex", DIR_PREFIX);
     const char* file = file_name.c_str();
 
     unsigned char* texture = ReadTexture3D(file, &nums, &numt, &nump);

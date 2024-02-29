@@ -1,4 +1,17 @@
-## Installation on Fedora 39 Linux
+## Installation on Windows
+
+```shell
+# clone the repository
+gh repo clone SpicyRicecaker/cs457
+# install vcpkg. Then, 
+vcpkg install glew:x64-windows glm:x64-windows freeglut:x64-windows
+# now open the cmakelists.txt file with visual studio open > cmake project.
+# profit
+```
+
+We install to a global directory, since for some reason there's no option to exclude folders from symbol search in visual studio?? And even if we move `vcpkg` to another folder, still some completely random files show up in symbol search. Whatever, c'est la cost of using windows.
+
+## Installation on Fedora 39 Linux (Deprecated)
 
 ### Build Dependencies
 

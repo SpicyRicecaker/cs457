@@ -1,5 +1,9 @@
 #include "glslprogram.h"
 
+#include <windows.h>
+#include <string>
+#include <iostream>
+
 struct GLshadertype
 {
   char* extension;
@@ -95,12 +99,12 @@ GLSLProgram::CreateHelper(char* file0, ...)
   while (file != NULL) {
     type = -1;
     char* extension = GetExtension(file);
-    // fprintf( stderr, "File = '%s', extension = '%s'\n", file, extension );
+    fprintf( stderr, "File = '%s', extension = '%s'\n", file, extension );
 
     int maxShaderTypes = sizeof(ShaderTypes) / sizeof(struct GLshadertype);
     for (int i = 0; i < maxShaderTypes; i++) {
       if (strcmp(extension, ShaderTypes[i].extension) == 0) {
-        // fprintf( stderr, "Legal extension = '%s'\n", extension );
+        fprintf( stderr, "Legal extension = '%s'\n", extension );
         type = i;
         break;
       }
@@ -526,42 +530,42 @@ GLSLProgram::GetUniformLocation(char* name)
 // This function uses the internally cached location of a uniform varible to
 // modify it
 void
-GLSLProgram::SetUniformVariable(char* name, int val)
+GLSLProgram::SetUniformVariable(const char* name, int val)
 {
   int loc;
-  if ((loc = GetUniformLocation(name)) >= 0) {
+  if ((loc = GetUniformLocation((char*)name)) >= 0) {
     this->Use();
     glUniform1i(loc, val);
   }
 };
 
 void
-GLSLProgram::SetUniformVariable(char* name, float val)
+GLSLProgram::SetUniformVariable(const char* name, float val)
 {
   int loc;
-  if ((loc = GetUniformLocation(name)) >= 0) {
+  if ((loc = GetUniformLocation((char*)name)) >= 0) {
     this->Use();
     glUniform1f(loc, val);
   }
 };
 
 void
-GLSLProgram::SetUniformVariable(char* name, float val0, float val1, float val2)
+GLSLProgram::SetUniformVariable(const char* name, float val0, float val1, float val2)
 {
   int loc;
-  if ((loc = GetUniformLocation(name)) >= 0) {
+  if ((loc = GetUniformLocation((char*) name)) >= 0) {
     this->Use();
     glUniform3f(loc, val0, val1, val2);
   }
 };
 
 void
-GLSLProgram::SetUniformVariable(char* name, float vals[3])
+GLSLProgram::SetUniformVariable(const char* name, float vals[3])
 {
   int loc;
   fprintf(stderr, "Found a 3-element array\n");
 
-  if ((loc = GetUniformLocation(name)) >= 0) {
+  if ((loc = GetUniformLocation((char*)name)) >= 0) {
     this->Use();
     glUniform3fv(loc, 1, vals);
   }

@@ -85,10 +85,10 @@ public:
   void SetAttributeVariable(char*, float, float, float);
   void SetAttributeVariable(char*, float[3]);
   void VertexAttrib3f(const char*, float, float, float);
-  void SetUniformVariable(char*, int);
-  void SetUniformVariable(char*, float);
-  void SetUniformVariable(char*, float, float, float);
-  void SetUniformVariable(char*, float[3]);
+  void SetUniformVariable(const char*, int);
+  void SetUniformVariable(const char*, float);
+  void SetUniformVariable(const char*, float, float, float);
+  void SetUniformVariable(const char*, float[3]);
   void SetVerbose(bool);
   void UnUse();
   void Use();
