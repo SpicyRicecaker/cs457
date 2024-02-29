@@ -3,8 +3,9 @@
 ```shell
 # clone the repository
 gh repo clone SpicyRicecaker/cs457
-# install vcpkg. Then, 
-vcpkg install glew:x64-windows glm:x64-windows freeglut:x64-windows
+# install vcpkg. Bootstrap it. Then, 
+vcpkg install glad glm glfw3
+vcpkg integrate install
 # now open the cmakelists.txt file with visual studio open > cmake project.
 # profit
 ```
@@ -26,9 +27,9 @@ Install the following development dependencies:
 ```shell
 sudo dnf install mesa-libGL # for <GL/gl.h> import.
 sudo dnf install mesa-libGL-devel # for <GL/gl.h> import. (Opengl)
-sudo dnf install mesa-libGLU-devel # for <GL/glu.h> import. "Provides functions to simplify common matrix operations, like setting up perspective or orthographic projection matrices" (Not sure which)
+sudo dnf install mesa-libGLU-devel # for <GLFW/glfw3.h> import. "Provides functions to simplify common matrix operations, like setting up perspective or orthographic projection matrices" (Not sure which)
 sudo dnf install freeglut-devel # for <glut.h> import. "Helps with creating windows, handling input, and managing the event loop in OpenGL"
-sudo dnf install glew-devel # for <GL/glew.h> import. "Provides efficient run-time mechanisms for determining which OpenGL extensions are supported on the target platform"
+sudo dnf install glew-devel # for <glad/glad.h> import. "Provides efficient run-time mechanisms for determining which OpenGL extensions are supported on the target platform"
 sudo dnf install glm-devel # for <glm/glm.hpp> import. "Linear algebra library".
 ```
 

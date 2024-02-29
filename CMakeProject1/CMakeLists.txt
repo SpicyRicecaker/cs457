@@ -14,14 +14,15 @@ add_executable(main ${SOURCES})
 
 # Find packages
 find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-find_package(GLEW REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 
 # Include directories
-include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
+# include_directories(${OPENGL_INCLUDE_DIRS} ${GLAD_INCLUDE_DIRS} ${GLFW3_INCLUDE_DIRS})
 
 # Link libraries
-target_link_libraries(main ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES})
+target_link_libraries(main PUBLIC OpenGL::GL glad::glad glfw glm::glm)
 
 # Set the build type (Optional)
 # set(CMAKE_BUILD_TYPE Debug)

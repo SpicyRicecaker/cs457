@@ -32,31 +32,32 @@ uniform float uA, uB, uC, uD;
 void
 main()
 {
-	// interpolated s & t coordinates?
-	vST = gl_MultiTexCoord0.st;
+	// // interpolated s & t coordinates?
+	// vST = gl_MultiTexCoord0.st;
 
 	vec4 vert = gl_Vertex;
-	float r = sqrt(pow(vert.x, 2) + pow(vert.y, 2));
-	vert.z = uA * cos(2. * M_PI * uB * r + uC) * exp(-uD * r);
+	// float r = sqrt(pow(vert.x, 2) + pow(vert.y, 2));
+	// vert.z = uA * cos(2. * M_PI * uB * r + uC) * exp(-uD * r);
 
-	float df_dr = -uA * sin(2. * M_PI * uB * r + uC) * 2. * M_PI * uB * exp(-uD * r) 
-	              + uA * cos(2. * M_PI * uB * r + uC) * exp(-uD * r);
+	// float df_dr = -uA * sin(2. * M_PI * uB * r + uC) * 2. * M_PI * uB * exp(-uD * r) 
+	//               + uA * cos(2. * M_PI * uB * r + uC) * exp(-uD * r);
 
-	float dr_dx = vert.x * sqrt(pow(vert.x, 2) + pow(vert.y, 2));
-	float dr_dy = vert.y * sqrt(pow(vert.x, 2) + pow(vert.y, 2));
+	// float dr_dx = vert.x * sqrt(pow(vert.x, 2) + pow(vert.y, 2));
+	// float dr_dy = vert.y * sqrt(pow(vert.x, 2) + pow(vert.y, 2));
 
-  	// why do we need this
-	vec4 ECposition = gl_ModelViewMatrix * vert;
-	// vector normal to current vertex?
-	// gl_NormalMatrix ensures that normals are transformed correctly normals
-	// are direction vectors while vertices are position vectors, so they need
-	// to be treated differently
-	vN = normalize( gl_NormalMatrix * vec3(df_dr * dr_dx, df_dr * dr_dy, 1.));  // normal vector
-	// vector from light to point
-	vL = LightPosition - ECposition.xyz;	    // vector from the point to the light position
-	vE = vec3( 0., 0., 0. ) - ECposition.xyz;       // vector from the point to the eye position
-	// add coordinates for later
-	vMCposition = vert.xyz;
-	// map vertex position from world space to 2d screen space (monitor resolution) basically
+  // 	// why do we need this
+	// vec4 ECposition = gl_ModelViewMatrix * vert;
+	// // vector normal to current vertex?
+	// // gl_NormalMatrix ensures that normals are transformed correctly normals
+	// // are direction vectors while vertices are position vectors, so they need
+	// // to be treated differently
+	// vN = normalize( gl_NormalMatrix * vec3(df_dr * dr_dx, df_dr * dr_dy, 1.));  // normal vector
+	// // vector from light to point
+	// vL = LightPosition - ECposition.xyz;	    // vector from the point to the light position
+	// vE = vec3( 0., 0., 0. ) - ECposition.xyz;       // vector from the point to the eye position
+	// // add coordinates for later
+	// vMCposition = vert.xyz;
+	// // map vertex position from world space to 2d screen space (monitor resolution) basically
+	// gl_Position = gl_ModelViewProjectionMatrix * vert;
 	gl_Position = gl_ModelViewProjectionMatrix * vert;
 }
