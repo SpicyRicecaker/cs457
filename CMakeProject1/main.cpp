@@ -9,6 +9,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "shader.h"
+
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -21,31 +23,6 @@ void processInput(GLFWwindow* window) {
   }
 }
 
-// WIP 
-// the most scuffed readfile function I have ever seen in my life
-string readFile(const char* path) {
-  ifstream file(path);
-
-  if (!file.is_open()) {
-    cerr << "Could not open the file - '" << path << "'" << endl;
-  }
-  
-  string output;
-  string s;
-  while (getline(file, s)) {
-    // Process or print the line
-    for (auto c : s) {
-      output.push_back(c);
-    }
-    output.push_back('\n');
-  }
-  cout << "running read file" << endl;
-  cout << output << endl;
-  cout << "done running read file" << endl;
-
-  file.close();
-  return output;
-}
 
 int main() {
   glfwInit();
@@ -81,12 +58,12 @@ int main() {
 
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-  const string debugPathPrefix = "../../../../CMakeProject1";
+  Shader shaderProgram("pattern.vert", "pattern.frag");
 
   float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
+    -0.5f, -0.5f, 0.0f, /* position */ 1., 0., 0. /* color */,
+     0.5f, -0.5f, 0.0f, 0., 1., 0., 
+     0.0f,  0.5f, 0.0f, 0., 0., 1.
   };
 
   // vertex buffer
@@ -101,58 +78,15 @@ int main() {
   // copy actual data over
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
+
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
-
-  unsigned int vertexShader;
-  vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  string vertexShaderSource = readFile(format("{}/shaders/pattern.vert", debugPathPrefix).c_str());
-  const GLchar* vertexShaderSourceRef = vertexShaderSource.c_str();
-  glShaderSource(vertexShader, 1, &vertexShaderSourceRef, NULL);
-  glCompileShader(vertexShader);
-
-  {
-    int  success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-    if (!success)
-    {
-      glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-  }
-
-  unsigned int fragmentShader;
-  fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  string fragmentShaderSource = readFile(format("{}/shaders/pattern.frag", debugPathPrefix).c_str());
-  const GLchar* fragmentShaderSourceRef = fragmentShaderSource.c_str();
-  glShaderSource(fragmentShader, 1, &fragmentShaderSourceRef, NULL);
-  glCompileShader(fragmentShader);
-
-  {
-    int  success;
-    char infoLog[512];
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-
-    if (!success)
-    {
-      glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-  }
-
-  unsigned int shaderProgram;
-  shaderProgram = glCreateProgram();
-
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glLinkProgram(shaderProgram);
-
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -163,7 +97,14 @@ int main() {
       glClear(GL_COLOR_BUFFER_BIT);
 
       // render pass
-      glUseProgram(shaderProgram);
+      // activate the shader program
+      shaderProgram.use();
+      float timeValue = glfwGetTime();
+      float amplitude = 0.5 * (sin(timeValue) + 1.);
+
+      shaderProgram.setFloat("amplitude", amplitude);
+
+      // draw the triangle
       glBindVertexArray(VAO);
       glDrawArrays(GL_TRIANGLES, 0, 3);
     }

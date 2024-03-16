@@ -1,8 +1,11 @@
 #version 330 core
 
 out vec4 FragColor;
+in vec3 v_color;
+
+uniform float amplitude;
 
 void main()
 {
-    FragColor = vec4(1., 0.5, 0.2, 1.);
+    FragColor = amplitude * vec4(v_color, 1.);
 }
