@@ -4,7 +4,7 @@
 # clone the repository
 gh repo clone SpicyRicecaker/cs457
 # install vcpkg. Bootstrap it. Then, 
-vcpkg install glad glm glfw3
+vcpkg install glad glm glfw3 imgui[core,glfw-binding,opengl3-binding]
 vcpkg integrate install
 # now open the cmakelists.txt file with visual studio open > cmake project.
 # profit

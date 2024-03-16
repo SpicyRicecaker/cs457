@@ -17,12 +17,13 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 
 # Include directories
 # include_directories(${OPENGL_INCLUDE_DIRS} ${GLAD_INCLUDE_DIRS} ${GLFW3_INCLUDE_DIRS})
 
 # Link libraries
-target_link_libraries(main PUBLIC OpenGL::GL glad::glad glfw glm::glm)
+target_link_libraries(main PUBLIC OpenGL::GL glad::glad glfw glm::glm imgui::imgui)
 
 # Set the build type (Optional)
 # set(CMAKE_BUILD_TYPE Debug)

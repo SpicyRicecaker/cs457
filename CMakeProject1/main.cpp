@@ -5,6 +5,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -63,6 +67,16 @@ int main() {
     std::cout << "Failed to initialize GLAD" << std::endl;
     return -1;
   }
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+  // Setup Platform/Renderer backends
+  ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+  ImGui_ImplOpenGL3_Init();
+
+  // initialize glfw
   glViewport(0, 0, 800, 600);
 
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -142,8 +156,8 @@ int main() {
 
   while (!glfwWindowShouldClose(window))
   {
+    glfwPollEvents();
     processInput(window);
-
     {
       glClearColor(0.6f, 0.3f, 0.3f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
@@ -153,9 +167,22 @@ int main() {
       glBindVertexArray(VAO);
       glDrawArrays(GL_TRIANGLES, 0, 3);
     }
+    // make imgui generate the vertex buffer information
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    ImGui::ShowDemoWindow(); // Show demo window! :)
+    // actually render the generated vertex buffer
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    // display frame from frame buffer
     glfwSwapBuffers(window);
-    glfwPollEvents();
   }
+  // cleanup imgui
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+  // cleanup glfw 
   glfwTerminate();
 
   return 0;
