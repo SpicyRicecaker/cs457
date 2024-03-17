@@ -5,11 +5,16 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
 #include "shader.h"
+#include "Sphere.h"
 
 using namespace std;
 
@@ -31,6 +36,8 @@ int main() {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   GLFWwindow* window = glfwCreateWindow(800, 600, "Andy Li Graphics", NULL, NULL);
+  double aspect_ratio = 800. / 600.;
+
   if (window == NULL)
   {
     std::cout << "Failed to create GLFW window" << std::endl;
@@ -60,33 +67,55 @@ int main() {
 
   Shader shaderProgram("pattern.vert", "pattern.frag");
 
-  float vertices[] = {
-    -0.5f, -0.5f, 0.0f, /* position */ 1., 0., 0. /* color */,
-     0.5f, -0.5f, 0.0f, 0., 1., 0., 
-     0.0f,  0.5f, 0.0f, 0., 0., 1.
-  };
+  // float vertices[] = {
+  //   -0.5f, -0.5f, 0.0f, /* position */ 1., 0., 0. /* color */,
+  //    0.5f, -0.5f, 0.0f, 0., 1., 0., 
+  //    0.0f,  0.5f, 0.0f, 0., 0., 1.
+  // };
 
-  // vertex buffer
-  unsigned int VAO, VBO;
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
+  // create sphere of radius 1, sector count of 36, stack count of 18, smooth shaded, with up axis of y (2)
+  Sphere sphere(1.0f, 36, 18, true, 2);
 
-  glBindVertexArray(VAO);
+  // create a new description for vertex buffer, along with the vertex buffer itself, along with an index buffer
+  unsigned int VAO1, VBO1, EBO1;
+  glGenVertexArrays(1, &VAO1);
+  glGenBuffers(1, &VBO1);
+  glGenBuffers(1, &EBO1);
 
-  // vertex attributes (vertex buffer description)
-  // specify vertex attributes?
-  // copy actual data over
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  // specify the attributes for our current VBO1
+  // ...then copy actual data over
+  glBindVertexArray(VAO1);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
+  {
+    // for the vertex buffer...
+    glBufferData(GL_ARRAY_BUFFER, sphere.getInterleavedVertexSize(), sphere.getInterleavedVertices(), GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
+    // actual vertices themselves
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
+    // normal coordinates
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
+    // texture coordinates
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // for the index buffer...
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphere.getIndexSize(), sphere.getIndices(), GL_STATIC_DRAW);
+  }
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
+
+  // make camera
+  glm::vec3 cam = glm::vec3(0., 0., 2.);
+  glm::mat4 projection = glm::perspective(glm::radians(90.), aspect_ratio, 0.1, 1000.);
+  glm::mat4 view = glm::mat4(1.);
+  view = glm::translate(view, -cam);
+  glm::mat4 model = glm::mat4(1.);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -104,9 +133,21 @@ int main() {
 
       shaderProgram.setFloat("amplitude", amplitude);
 
-      // draw the triangle
-      glBindVertexArray(VAO);
-      glDrawArrays(GL_TRIANGLES, 0, 3);
+      glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+      glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+      glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+      // draw the sphere
+      glBindVertexArray(VAO1);
+      // vbo gets added automatically when vertex array is bound, but not the
+      // element array buffer, but that kinda makes sense
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1); // debug
+      // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      {
+        glDrawElements(GL_TRIANGLES, sphere.getIndexSize(), GL_UNSIGNED_INT, 0);
+      }
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      glBindVertexArray(0);
     }
     // make imgui generate the vertex buffer information
     ImGui_ImplOpenGL3_NewFrame();
