@@ -79,7 +79,7 @@ private:
     void buildVerticesFlat();
     void buildInterleavedVertices();
     void changeUpAxis(int from, int to);
-    void clearArrays();
+    const void clearArrays();
     void addVertex(float x, float y, float z);
     void addNormal(float x, float y, float z);
     void addTexCoord(float s, float t);
