@@ -42,6 +42,22 @@ struct Game {
   Mouse mouse;
 };
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+  Game* game = (Game*)glfwGetWindowUserPointer(window);
+  if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+    cout << "swapped" << endl;
+    if (!game->mouse.active) {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      // set cursor position to middle of window to remove jank
+      game->mouse.pos = glm::vec2(400., 300.);
+    }
+    else {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+    game->mouse.active = !game->mouse.active;
+  }
+}
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
   Game* game = (Game*)glfwGetWindowUserPointer(window);
@@ -91,17 +107,6 @@ void processInput(GLFWwindow* window) {
   if (glfwGetKey(window, GLFW_KEY_SPACE)) {
     cam->velocity += cam->speed * glm::vec3(0., 1., 0.);
   }
-  if (glfwGetKey(window, GLFW_KEY_F)) {
-    if (!game->mouse.active) {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-      // set cursor position to middle of window to remove jank
-      game->mouse.pos = glm::vec2(400., 300.);
-    }
-    else {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
-    game->mouse.active = !game->mouse.active;
-  }
 }
 
 int main() {
@@ -145,6 +150,7 @@ int main() {
   // let game be accessible in the input callback function
   glfwSetWindowUserPointer(window, &game);
   glfwSetCursorPosCallback(window, mouse_callback);  
+  glfwSetKeyCallback(window, key_callback);
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
@@ -169,7 +175,7 @@ int main() {
   // };
 
   // create sphere of radius 1, sector count of 36, stack count of 18, smooth shaded, with up axis of y (2)
-  Sphere sphere(1.0f, 36, 18, true, 2);
+  Sphere sphere(1.0f, 100, 100, true, 2);
 
   // create a new description for vertex buffer, along with the vertex buffer itself, along with an index buffer
   unsigned int VAO1, VBO1, EBO1;
@@ -183,6 +189,11 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, VBO1);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
   {
+
+    // float vertices[] = {
+    //    1., 2., 3.,
+    // };
+    
     // for the vertex buffer...
     glBufferData(GL_ARRAY_BUFFER, sphere.getInterleavedVertexSize(), sphere.getInterleavedVertices(), GL_STATIC_DRAW);
 
@@ -210,6 +221,8 @@ int main() {
   glm::mat4 view = glm::lookAt(game.camera.position, game.camera.direction, game.camera.up);
   glm::mat4 model = glm::mat4(1.);
 
+  glEnable(GL_DEPTH_TEST);  
+
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
@@ -231,8 +244,8 @@ int main() {
       model = glm::rotate(model, (float) glm::radians(game.mouse.angle.x), glm::vec3(0., 1., 0.));
       // pitch
       model = glm::rotate(model, (float) glm::radians(game.mouse.angle.y), glm::vec3(1., 0., 0.));
-      game.camera.direction = (model * glm::vec4(0., 0., -1., 1.)).xyz;
-      game.camera.up = (model * glm::vec4(0., 1., 0., 1.)).xyz;
+      game.camera.direction = (model * glm::vec4(0., 0., -1., 0.)).xyz;
+      game.camera.up = (model * glm::vec4(0., 1., 0., 0.)).xyz;
 
       game.mouse.delta_pos.x = 0;
       game.mouse.delta_pos.y = 0;
@@ -247,7 +260,7 @@ int main() {
 
     {
       glClearColor(0.6f, 0.3f, 0.3f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       // render pass
       // activate the shader program
@@ -257,9 +270,14 @@ int main() {
 
       shaderProgram.setFloat("amplitude", amplitude);
 
-      glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-      glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
-      glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+      shaderProgram.setMat4("model", model);
+      shaderProgram.setMat4("view", view);
+      shaderProgram.setMat4("projection", projection);
+
+      glm::mat3 normal = glm::mat3(glm::transpose(glm::inverse(model)));
+      shaderProgram.setMat3("normal", normal);
+
+      shaderProgram.setVec3("eye", game.camera.position);
 
       // draw the sphere
       glBindVertexArray(VAO1);
