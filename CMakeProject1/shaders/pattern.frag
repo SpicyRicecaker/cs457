@@ -4,9 +4,13 @@ out vec4 FragColor;
 
 in vec3 v_n;
 in vec3 v_wc;
+in vec2 v_st;
 uniform vec3 eye;
 
 uniform float amplitude;
+
+uniform sampler2D texture_1;
+uniform sampler2D texture_2;
 
 const vec3 light_color = vec3(1., 1., 1.);
 const vec3 light_pos = vec3(5., 5., 5.);
@@ -30,5 +34,8 @@ void main()
   float spec = pow(max(dot(reflect_ray, v_eye_dir), 0.), specular_factor);
   vec3 specular = specular_strength * spec * light_color;
 
-  FragColor = vec4((ambient + diffuse + specular), 1.);
+  vec3 tex_color_1 = texture(texture_1, v_st).rgb;
+  vec3 tex_color_2 = texture(texture_2, v_st).rgb;
+
+  FragColor = vec4((ambient + diffuse + specular) * mix(tex_color_1, tex_color_2, 0.2), 1.);
 }

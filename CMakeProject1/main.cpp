@@ -10,6 +10,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+// user-friendly text message on failures
+#define STBI_FAILURE_USERMSG 
+#include "stb_image.h"
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -46,14 +51,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
   Game* game = (Game*)glfwGetWindowUserPointer(window);
   if (key == GLFW_KEY_F && action == GLFW_PRESS) {
-    cout << "swapped" << endl;
     if (!game->mouse.active) {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      cout << "captured mouse cursor" << endl;
       // set cursor position to middle of window to remove jank
       game->mouse.pos = glm::vec2(400., 300.);
     }
     else {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+      cout << "freed mouse cursor" << endl;
     }
     game->mouse.active = !game->mouse.active;
   }
@@ -223,6 +229,68 @@ int main() {
 
   glEnable(GL_DEPTH_TEST);  
 
+  // configure opengl texture behavior
+  // 2d textures
+  unsigned int texture_1;
+  glGenTextures(1, &texture_1);
+  glBindTexture(GL_TEXTURE_2D, texture_1);
+
+  // specify wrapping & magnification behavior
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+  // use auto-generated mipmaps when scaling down
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // the nrChannels refers to the number of values per pixel, like R/G/B for a jpg
+  {
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load(format("{}/textures/container.jpg", DEBUG_PATH_PREFIX).c_str(), &width, &height, &nrChannels, 0);
+    if (data) {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+      glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+      // cout << width << "," << height << "," << nrChannels << endl; // debug
+      cout << stbi_failure_reason() << endl;
+    }
+    stbi_image_free(data);
+  }
+
+  unsigned int texture_2;
+  glGenTextures(1, &texture_2);
+  glBindTexture(GL_TEXTURE_2D, texture_2);
+
+  // specify wrapping & magnification behavior
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+  // use auto-generated mipmaps when scaling down
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  {
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load(format("{}/textures/awesomeface.png", DEBUG_PATH_PREFIX).c_str(), &width, &height, &nrChannels, 0);
+    if (data) {
+      // cout << width << "," << height << "," << nrChannels << endl; // debug
+      // keep in mind if there's a mismatch between gl_rgba and the nrChannels, you will get random-looking textures
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+      glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+      // cout << width << "," << height << "," << nrChannels << endl; // debug
+      cout << stbi_failure_reason() << endl;
+    }
+    stbi_image_free(data);
+  }
+
+  // 3d textures
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
+
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
   while (!glfwWindowShouldClose(window))
   {
     glfwPollEvents();
@@ -279,12 +347,19 @@ int main() {
 
       shaderProgram.setVec3("eye", game.camera.position);
 
+      shaderProgram.setInt("texture_1", 0);
+      shaderProgram.setInt("texture_2", 1);
+
       // draw the sphere
       glBindVertexArray(VAO1);
       // vbo gets added automatically when vertex array is bound, but not the
       // element array buffer, but that kinda makes sense
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1); // debug
-      // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, texture_1);
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, texture_2);
+      // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe debug mode
       {
         glDrawElements(GL_TRIANGLES, sphere.getIndexSize(), GL_UNSIGNED_INT, 0);
       }

@@ -18,9 +18,11 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+find_package(Stb REQUIRED)
 
 # Include directories
 # include_directories(${OPENGL_INCLUDE_DIRS} ${GLAD_INCLUDE_DIRS} ${GLFW3_INCLUDE_DIRS})
+target_include_directories(main PUBLIC ${Stb_INCLUDE_DIR})
 
 # Link libraries
 target_link_libraries(main PUBLIC OpenGL::GL glad::glad glfw glm::glm imgui::imgui)

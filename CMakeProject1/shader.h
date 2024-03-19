@@ -10,23 +10,23 @@
 
 using namespace std;
 
+const string DEBUG_PATH_PREFIX = "../../../../CMakeProject1";
+
 class Shader {
 public:
   // the program ID
   unsigned ID; 
 
   Shader(const char* vertexPath, const char* fragmentPath) {
-    const string debugPathPrefix = "../../../../CMakeProject1";
-
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    string vertexShaderSource = readFile(format("{}/shaders/{}", debugPathPrefix, vertexPath).c_str());
+    string vertexShaderSource = readFile(format("{}/shaders/{}", DEBUG_PATH_PREFIX, vertexPath).c_str());
     const GLchar* vertexShaderSourceRef = vertexShaderSource.c_str();
     glShaderSource(vertexShader, 1, &vertexShaderSourceRef, NULL);
     glCompileShader(vertexShader);
     checkCompileErrors(vertexShader, "VERTEX");
 
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    string fragmentShaderSource = readFile(format("{}/shaders/{}", debugPathPrefix, fragmentPath).c_str());
+    string fragmentShaderSource = readFile(format("{}/shaders/{}", DEBUG_PATH_PREFIX, fragmentPath).c_str());
     const GLchar* fragmentShaderSourceRef = fragmentShaderSource.c_str();
     glShaderSource(fragmentShader, 1, &fragmentShaderSourceRef, NULL);
     glCompileShader(fragmentShader);
