@@ -379,20 +379,36 @@ void main()
 
   // vec3 wav_noi_lerp = mix(wave_cr, octave_perlin(v_wc + vec2(0.001, 0.001), 12, 0.86) * vec3(1., 1., 1.), 0.5);
   vec3 wav_noi_lerp = mix(wave_cr, octave_perlin(v_wc + vec3(0.0001, 0.0001, 0.0001), 12, 0.86) * vec3(1., 1., 1.), 0.5);
+
+  // THIS IS THE MELON WITHOUT THE SUFF YUMMY :)
   vec3 wav_noi_lerp_cr = color_ramp_linear_4(
-    vec3(0.6941, 0.6941, 0.6941),
-    0., 
-    vec3(0.7333, 0.7373, 0.7373),
-    0.114,
-    vec3(1., 1., 1.),
-    1., 
+    vec3(0.1333, 0.2118, 0.1137),
+    0.598, 
+    vec3(0.2902, 0.4392, 0.1961),
+    0.685,
+    vec3(0.3843, 0.5725, 0.2510),
+    0.711,
+    vec3(0.6392, 0.6902, 0.3765),
+    0.781, 
     luminance_of(wav_noi_lerp)
   );
+
+  vec3 wav_noi_lerp_cr_bw = color_ramp_linear(
+    vec3(0., 0., 0.),
+    0.246, 
+    vec3(1., 1., 1.),
+    0.369, 
+    luminance_of(wav_noi_lerp_cr)
+  );
+
+  vec3 full_skeleton_bw = min(clamp(5. * vor_noi_cr, vec3(0., 0., 0.), vec3(1., 1., 1.)), wav_noi_lerp_cr_bw);
+
+  vec3 out_color = mix(wav_noi_lerp_cr, vec3(0.7333, 0.6941, 0.5490), luminance_of(full_skeleton_bw));
   // float wave_and_noise = mix(luminance_of(wave_texture())
   // FragColor = vec4(octave_perlin(v_wc, 7, 2.) * vec3(1., 1., 1.), 1.);
 
   // FragColor = vec4(vor_noi_cr * phong, 1.); // debug perlin noise
 
-  FragColor = vec4(wav_noi_lerp, 1.);
+  FragColor = vec4(out_color, 1.);
   // FragColor = vec4(octave_perlin(v_wc, 12, 0.86) * vec3(1., 1., 1.), 1.); // debug perlin noise
 }
