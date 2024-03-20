@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <format>
+#include <stdlib.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -142,7 +143,7 @@ int main() {
     .last_frame = 0.,
     .camera = {
       .velocity = glm::vec3(0., 0., 0.),
-      .position = glm::vec3(0., 0., 2.),
+      .position = glm::vec3(0.5, 0.5, 1.5),
       .direction = glm::vec3(0., 0., -1.),
       .up = glm::vec3(0., 1., 0.),
       .speed = 2.5,
@@ -225,7 +226,10 @@ int main() {
   // make camera
   glm::mat4 projection = glm::perspective(glm::radians(90.), aspect_ratio, 0.1, 1000.);
   glm::mat4 view = glm::lookAt(game.camera.position, game.camera.direction, game.camera.up);
-  glm::mat4 model = glm::mat4(1.);
+  // scuffed, move object into [0,1]x[0,1]x[0,1] space lol
+  // need buffer of bboxes if we want to have multiple or moving objects
+  glm::mat4 model = glm::translate(glm::mat4(1.), glm::vec3(0.5, 0.5, 0.5));
+  model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
 
   glEnable(GL_DEPTH_TEST);  
 
@@ -290,6 +294,29 @@ int main() {
 
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // storage buffer for random numbers
+  // get 100 random vec3s ranging from 0 to 1 for each component
+
+  // srand(0);
+  // vector<glm::vec4> random_points;
+  // for (int i = 0; i < 1000; i++) {
+  //   float x = (float) rand() / (float) RAND_MAX;
+  //   float y = (float) rand() / (float) RAND_MAX;
+  //   float z = (float) rand() / (float) RAND_MAX;
+  //   // padding 
+  //   random_points.push_back(glm::vec4(x, y, z, 0.));
+  //   
+  //   // if (i == 0) {
+  //   //   cout << x << "," << y << "," << z << endl;
+  //   // }
+  // }
+
+  // unsigned int ssbo;
+  // glGenBuffers(1, &ssbo);
+  // glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+  // glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec4) * random_points.size(), random_points.data(), GL_DYNAMIC_DRAW);
+  // unsigned int ssbo_binding_point = 0; // You can choose any binding point that's not already in use
 
   while (!glfwWindowShouldClose(window))
   {
@@ -359,6 +386,8 @@ int main() {
       glBindTexture(GL_TEXTURE_2D, texture_1);
       glActiveTexture(GL_TEXTURE1);
       glBindTexture(GL_TEXTURE_2D, texture_2);
+
+      // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssbo_binding_point, ssbo);
       // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe debug mode
       {
         glDrawElements(GL_TRIANGLES, sphere.getIndexSize(), GL_UNSIGNED_INT, 0);
