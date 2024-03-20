@@ -15,10 +15,10 @@ uniform sampler2D texture_2;
 const vec3 light_color = vec3(1., 1., 1.);
 const vec3 light_pos = vec3(5., 5., 5.);
 
-layout(binding = 0, std430) readonly buffer SSBO {
-    // The layout here should match the data structure in C++
-    vec4 random_points[];
-};
+uniform float r_a;
+uniform float r_b;
+uniform float r_c;
+uniform float r_d;
 
 // MOD PERLIN {
 // Note: Code inspired by Flafla2 https://adrianb.io/2014/08/09/perlinnoise.html,
@@ -142,6 +142,7 @@ float octave_perlin(vec3 pos, int octaves, float persistence) {
     float total = 0.;
     float frequency = 1.;
     float amplitude = 1.;
+
     float maxValue = 0.;  // Used for normalizing result to 0.0 - 1.0
     for(int i = 0; i < octaves; i++) {
         total += perlin(frequency * pos) * amplitude;
@@ -156,6 +157,76 @@ float octave_perlin(vec3 pos, int octaves, float persistence) {
 }
 
 // ENDMOD PERLIN
+
+float luminance_of(vec3 v) {
+	float luminance = dot(vec3(0.299, 0.587, 0.114), v);
+	return luminance;
+}
+
+// basically smoothstep but sharp
+vec3 color_ramp_linear(vec3 color1, float pos_color1, vec3 color2, float pos_color2, float luminance) {
+    // float luminance = luminance_of(colorin);
+
+    vec3 out_color = vec3(0., 0., 0.);
+
+    if (luminance <= pos_color1) {
+        out_color = color1;
+    } else if (luminance <= pos_color2) {
+        out_color = mix(color1, color2, (luminance - pos_color1) / (pos_color2 - pos_color1));
+    } else {
+        out_color = color2;
+    }
+
+    return out_color;
+}
+
+vec3 wave_texture() {
+	vec3 wave_color = vec3(0., 0., 0.);
+
+	int num_stripes = 10;
+
+	float a = 0.;
+	float b = 1.;
+	float range = b - a;
+
+	float dx = range / float(num_stripes);
+
+  // v_st
+	int stripe_num = int((v_st.s / range) /*ratio of 0 to 1*/ * float(num_stripes));
+
+	float stripe_center = a + float(stripe_num) * dx + dx / 2.;
+
+	float stripe_radius = 0.01;
+	// float tolerance = 0.01;
+	float d = abs(v_st.s - stripe_center);
+	float t = d / stripe_radius;
+
+	// wave_one_color = mix(vec3(0., 0., 0.), vec3(1., 1., 1.), d / stripe_radius);
+	// https://dev.to/thehalfbloodprince/stripes-in-shaders-3n5n
+
+	// 2pi / b
+	// if we want 50 stripes...
+	// float f = fract( A * (cameraSpacePosXNormalized / 2.) );
+
+	// float xpos = d / stripe_radius;
+	// float p = -2.8;
+	// float r = 3.1;
+	// float t = exp(r * xpos + p) / (1. + exp(r * xpos + p));
+	// float t = smoothstep( 0.5-uP-uTol, 0.5-uP+uTol, f ) - smoothstep( 0.5+uP-uTol, 0.5+uP+uTol, f );
+
+	wave_color = mix(vec3(0., 0., 0.), vec3(1., 1., 1.), (log(t)+2.)/3.2);
+	wave_color = clamp(wave_color, vec3(0., 0., 0.), vec3(1., 1., 1.));
+
+	return wave_color;
+
+	// float s = A * sin(B * cameraSpacePosXNormalized) + C;
+	// if (s < 0.902) {
+	// 	s /= C;
+	// }
+
+	// wave_one_color = mix(vec3(0., 0., 0.), vec3(1., 1., 1.), s);
+}
+
 
 
 void main()
@@ -184,21 +255,70 @@ void main()
 
   vec3 phong = ambient + diffuse + specular;
 
-  // get distance to closest cell
-  float min_dist = 1.1;
-  float second_min_dist = 1.0;
-
-  for (int i = 0; i < random_points.length(); i++) {
-    if (distance(v_wc, random_points[i].xyz) < min_dist) {
-      min_dist = distance(v_wc, random_points[i].xyz);
-    } else if (distance(v_wc, random_points[i].xyz) < second_min_dist) {
-      second_min_dist = distance(v_wc, random_points[i].xyz);
-    }
-  }
   // right now, the closer it is to the center, the darker it is
   // this is good, however, if it is at the edge we need to it be really light
   // an exponential function
 
+  // attempt to implement voronoi distance to edge, but without the jitter, so it's literally a square grid
+  float cell_width = 0.02;
+  // get center cell based on current position
+  // code inspired by blender source:
+  // https://github.com/blender/blender/blob/3135e766ec1055be7f08a93cff51fe1ed8b453d1/intern/cycles/kernel/svm/voronoi.h#L551
+  // except it's without the randomness/jitter, so it's basically a 1000x1000 rubix cube, boring 3d square grid
+
+  vec3 generator = floor(v_wc / cell_width) * cell_width + 0.5 * cell_width;
+
+  // 1 is a relatively huge number
+  float min_dist = 1.;
+
+  vec3 to_closest_generator ;
+  for (int i = -1; i <= 1; i++) {
+    for (int j = -1; j <= 1; j++) {
+      for (int k = -1; k <= 1; k++) {
+        vec3 neighbor_generator = generator + cell_width * vec3(float(i), float(j), float(k));
+
+        vec3 to_neighbor_generator = -v_wc + neighbor_generator;
+        if (length(to_neighbor_generator) < min_dist) {
+          min_dist = length(to_neighbor_generator);
+          to_closest_generator = to_neighbor_generator;
+        }
+      }
+    }
+  }
+
+  min_dist = 1.;
+
+  // find distance edge, normalized to [0,1] <- this is the important part
+  for (int k = -1; k <= 1; k++) {
+    for (int j = -1; j <= 1; j++) {
+      for (int i = -1; i <= 1; i++) {
+        vec3 neighbor_generator = generator + cell_width * vec3(float(i), float(j), float(k));
+
+        vec3 to_neighbor_generator = -v_wc + neighbor_generator;
+
+        vec3 perpendicular_to_edge = -to_closest_generator + to_neighbor_generator;
+
+        if (dot(perpendicular_to_edge, perpendicular_to_edge) > 0.000001f) {
+          float distance_to_edge = dot(normalize((to_closest_generator + to_neighbor_generator) / 2.0f),
+                                     normalize(perpendicular_to_edge));
+          min_dist = min(min_dist, distance_to_edge);
+        }
+      }
+    }
+  }
+
+  float voronoi = min_dist;
+
+  float voronoi_and_noise = mix(voronoi, octave_perlin(v_wc, 12, 0.86), 0.878);
+
+  // 0.379, 0.438
+  vec3 vor_noi_cr = color_ramp_linear(vec3(1., 1., 1.), 0.379, vec3(0., 0., 0.), 0.438, voronoi_and_noise);
+  // vec3 vor_noi_cr = color_ramp_linear(vec3(1., 1., 1.), 0.063, vec3(0., 0., 0.), 0.253, voronoi_and_noise);
+
   // FragColor = vec4(octave_perlin(v_wc, 7, 2.) * vec3(1., 1., 1.), 1.);
-  FragColor = vec4(((second_min_dist + min_dist)/2.) * vec3(1., 1., 1.), 1.); // debug perlin noise
+
+  // FragColor = vec4(vor_noi_cr * phong, 1.); // debug perlin noise
+
+  FragColor = vec4(wave_texture(), 1.);
+  // FragColor = vec4(octave_perlin(v_wc, 12, 0.86) * vec3(1., 1., 1.), 1.); // debug perlin noise
 }

@@ -46,6 +46,10 @@ struct Game {
   float last_frame;
   Camera camera;
   Mouse mouse;
+  float r_a;
+  float r_b;
+  float r_c;
+  float r_d;
 };
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -152,7 +156,11 @@ int main() {
       .active = false,
       .sensitivity = 0.1,
       .pos = glm::vec2(0., 0.),
-    }
+    },
+    .r_a = 0.,
+    .r_b = 0.,
+    .r_c = 0.,
+    .r_d = 0.,
   };
   // let game be accessible in the input callback function
   glfwSetWindowUserPointer(window, &game);
@@ -377,6 +385,11 @@ int main() {
       shaderProgram.setInt("texture_1", 0);
       shaderProgram.setInt("texture_2", 1);
 
+      shaderProgram.setFloat("r_a", game.r_a);
+      shaderProgram.setFloat("r_b", game.r_b);
+      shaderProgram.setFloat("r_c", game.r_c);
+      shaderProgram.setFloat("r_d", game.r_d);
+
       // draw the sphere
       glBindVertexArray(VAO1);
       // vbo gets added automatically when vertex array is bound, but not the
@@ -404,6 +417,10 @@ int main() {
     ImGui::Text(format("pos: {}", vec3_format(game.camera.position)).c_str());
     ImGui::Text(format("direction: {}", vec3_format(game.camera.direction)).c_str());
     ImGui::Text(format("up: {}", vec3_format(game.camera.up)).c_str());
+    ImGui::SliderFloat("r_a", &game.r_a, 0.0f, 1.0f, "Value = %.3f");
+    ImGui::SliderFloat("r_b", &game.r_b, 0.0f, 1.0f, "Value = %.3f");
+    ImGui::SliderFloat("r_c", &game.r_c, 0.0f, 1.0f, "Value = %.3f");
+    ImGui::SliderFloat("r_d", &game.r_d, 0.0f, 1.0f, "Value = %.3f");
     ImGui::End();
     // actually render the generated vertex buffer
     ImGui::Render();
