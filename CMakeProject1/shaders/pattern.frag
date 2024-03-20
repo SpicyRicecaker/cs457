@@ -170,15 +170,67 @@ vec3 color_ramp_linear(vec3 color1, float pos_color1, vec3 color2, float pos_col
     vec3 out_color = vec3(0., 0., 0.);
 
     if (luminance <= pos_color1) {
-        out_color = color1;
+      out_color = color1;
     } else if (luminance <= pos_color2) {
-        out_color = mix(color1, color2, (luminance - pos_color1) / (pos_color2 - pos_color1));
+      out_color = mix(color1, color2, (luminance - pos_color1) / (pos_color2 - pos_color1));
     } else {
-        out_color = color2;
+      out_color = color2;
     }
 
     return out_color;
 }
+
+// basically smoothstep but sharp
+vec3 color_ramp_linear_3(
+  vec3 color1, float pos_color1, 
+  vec3 color2, float pos_color2, 
+  vec3 color3, float pos_color3, 
+  float luminance
+) {
+    // float luminance = luminance_of(colorin);
+
+    vec3 out_color = vec3(0., 0., 0.);
+
+    if (luminance <= pos_color1) {
+      out_color = color1;
+    } else if (luminance <= pos_color2) {
+      out_color = mix(color1, color2, (luminance - pos_color1) / (pos_color2 - pos_color1));
+    } else if (luminance <= pos_color3) {
+      out_color = mix(color2, color3, (luminance - pos_color2) / (pos_color3 - pos_color2));
+    } else {
+      out_color = color3;
+    }
+
+    return out_color;
+}
+
+// basically smoothstep but sharp
+vec3 color_ramp_linear_4(
+  vec3 color1, float pos_color1, 
+  vec3 color2, float pos_color2, 
+  vec3 color3, float pos_color3, 
+  vec3 color4, float pos_color4, 
+  float luminance
+) {
+    // float luminance = luminance_of(colorin);
+
+    vec3 out_color = vec3(0., 0., 0.);
+
+    if (luminance <= pos_color1) {
+      out_color = color1;
+    } else if (luminance <= pos_color2) {
+      out_color = mix(color1, color2, (luminance - pos_color1) / (pos_color2 - pos_color1));
+    } else if (luminance <= pos_color3) {
+      out_color = mix(color2, color3, (luminance - pos_color2) / (pos_color3 - pos_color2));
+    } else if (luminance <= pos_color4) {
+      out_color = mix(color3, color4, (luminance - pos_color3) / (pos_color4 - pos_color3));
+    } else {
+      out_color = color4;
+    }
+
+    return out_color;
+}
+
 
 vec3 wave_texture() {
 	vec3 wave_color = vec3(0., 0., 0.);
@@ -315,10 +367,32 @@ void main()
   vec3 vor_noi_cr = color_ramp_linear(vec3(1., 1., 1.), 0.379, vec3(0., 0., 0.), 0.438, voronoi_and_noise);
   // vec3 vor_noi_cr = color_ramp_linear(vec3(1., 1., 1.), 0.063, vec3(0., 0., 0.), 0.253, voronoi_and_noise);
 
+  vec3 wave_cr = color_ramp_linear_3(
+    vec3(0.6941, 0.6941, 0.6941),
+    0., 
+    vec3(0.7333, 0.7373, 0.7373),
+    0.114,
+    vec3(1., 1., 1.),
+    1., 
+    luminance_of(wave_texture())
+  );
+
+  // vec3 wav_noi_lerp = mix(wave_cr, octave_perlin(v_wc + vec2(0.001, 0.001), 12, 0.86) * vec3(1., 1., 1.), 0.5);
+  vec3 wav_noi_lerp = mix(wave_cr, octave_perlin(v_wc + vec3(0.0001, 0.0001, 0.0001), 12, 0.86) * vec3(1., 1., 1.), 0.5);
+  vec3 wav_noi_lerp_cr = color_ramp_linear_4(
+    vec3(0.6941, 0.6941, 0.6941),
+    0., 
+    vec3(0.7333, 0.7373, 0.7373),
+    0.114,
+    vec3(1., 1., 1.),
+    1., 
+    luminance_of(wav_noi_lerp)
+  );
+  // float wave_and_noise = mix(luminance_of(wave_texture())
   // FragColor = vec4(octave_perlin(v_wc, 7, 2.) * vec3(1., 1., 1.), 1.);
 
   // FragColor = vec4(vor_noi_cr * phong, 1.); // debug perlin noise
 
-  FragColor = vec4(wave_texture(), 1.);
+  FragColor = vec4(wav_noi_lerp, 1.);
   // FragColor = vec4(octave_perlin(v_wc, 12, 0.86) * vec3(1., 1., 1.), 1.); // debug perlin noise
 }
