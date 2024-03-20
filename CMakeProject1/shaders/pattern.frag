@@ -312,7 +312,8 @@ void main()
   // an exponential function
 
   // attempt to implement voronoi distance to edge, but without the jitter, so it's literally a square grid
-  float cell_width = 0.02;
+  // 0.02
+  float cell_width = r_b;
   // get center cell based on current position
   // code inspired by blender source:
   // https://github.com/blender/blender/blob/3135e766ec1055be7f08a93cff51fe1ed8b453d1/intern/cycles/kernel/svm/voronoi.h#L551
@@ -364,7 +365,7 @@ void main()
   float voronoi_and_noise = mix(voronoi, octave_perlin(v_wc, 12, 0.86), 0.878);
 
   // 0.379, 0.438
-  vec3 vor_noi_cr = color_ramp_linear(vec3(1., 1., 1.), 0.379, vec3(0., 0., 0.), 0.438, voronoi_and_noise);
+  vec3 vor_noi_cr = color_ramp_linear(vec3(1., 1., 1.), r_c, vec3(0., 0., 0.), r_d, voronoi_and_noise);
   // vec3 vor_noi_cr = color_ramp_linear(vec3(1., 1., 1.), 0.063, vec3(0., 0., 0.), 0.253, voronoi_and_noise);
 
   vec3 wave_cr = color_ramp_linear_3(
@@ -383,7 +384,8 @@ void main()
   // THIS IS THE MELON WITHOUT THE SUFF YUMMY :)
   vec3 wav_noi_lerp_cr = color_ramp_linear_4(
     vec3(0.1333, 0.2118, 0.1137),
-    0.598, 
+    // 0.598
+    r_a, 
     vec3(0.2902, 0.4392, 0.1961),
     0.685,
     vec3(0.3843, 0.5725, 0.2510),

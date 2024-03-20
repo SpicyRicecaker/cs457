@@ -157,10 +157,10 @@ int main() {
       .sensitivity = 0.1,
       .pos = glm::vec2(0., 0.),
     },
-    .r_a = 0.,
-    .r_b = 0.,
-    .r_c = 0.,
-    .r_d = 0.,
+    .r_a = 0.598,
+    .r_b = 0.02,
+    .r_c = 0.379,
+    .r_d = 0.438,
   };
   // let game be accessible in the input callback function
   glfwSetWindowUserPointer(window, &game);
